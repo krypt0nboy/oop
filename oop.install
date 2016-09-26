@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function oop_schema() {
+  $schema                = array();
+  $schema[OOP_DB__CACHE] = drupal_get_schema_unprocessed('system', 'cache');
+
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function oop_install() {
+  variable_set('oop_cache_enabled', TRUE);
+}

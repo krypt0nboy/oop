@@ -1,0 +1,30 @@
+name = "OOP (Object Oriented Programming)"
+description = "Provides with useful OOP related functions, classes, traits"
+core = 7.x
+
+; Version
+version = 7.x-1.0-beta1
+
+; Dependencies
+dependencies[] = ctools
+dependencies[] = php_plus
+dependencies[] = drupal_plus
+
+; Classes
+
+; Factories
+files[] = src/classes/factories/FactoryBase.inc
+
+; Helpers
+files[] = src/classes/helpers/HelperBase.inc
+
+; Variables
+files[] = src/classes/variables/VariableBase.inc
+files[] = src/classes/variables/php/BooleanVariables.inc
+
+; Traits
+files[] = src/traits/OopCommon.inc
+files[] = src/traits/Templating.inc
+
+; Author
+; Harold Cohen AKA kryptonboy <me@harold-cohen.com>

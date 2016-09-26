@@ -1,0 +1,76 @@
+<?php
+
+/**
+ * The module's static name.
+ */
+define('OOP', 'oop');
+
+/**
+ * The module's path.
+ */
+define('OOP_PATH', module_get_path('oop'));
+
+module_load_include('inc', OOP, 'oop.cache');
+module_load_include('inc', OOP, 'oop.functions');
+module_load_include('inc', OOP, 'oop.factories');
+module_load_include('inc', OOP, 'oop.invoke');
+
+/**
+ * Implements hook_menu().
+ */
+function oop_menu() {
+  $items                          = array();
+  $items['admin/config/oop']      = array(
+    'title'            => 'Oop',
+    'description'      => 'Oop',
+    'type'             => MENU_NORMAL_ITEM,
+    'page callback'    => 'system_admin_menu_block_page',
+    'access arguments' => array('access administration pages'),
+    'file path'        => drupal_get_path('module', 'system'),
+    'file'             => 'system.admin.inc',
+  );
+  $items['admin/config/oop/test'] = array(
+    'title'            => 'Oop test page',
+    'type'             => MENU_NORMAL_ITEM,
+    'page callback'    => 'oop_test',
+    'access arguments' => array('access site configuration'),
+  );
+
+  return $items;
+}
+
+/**
+ * Test function.
+ */
+function oop_test() {
+  require_once GENERATOR_PATH . '/src/classes/factories/generators/GeneratorFactory.inc';
+  $factory  = new GeneratorFactory();
+  $instance = $factory->getInstance();
+}
+
+/**
+ * Implements hook_class_info().
+ */
+function oop_class_info() {
+  $info              = array();
+  $info['templater'] = array(
+    'class'   => 'TemplaterBase',
+    'info'    => array(
+      'base' => 'TemplaterBase',
+    ),
+    'factory' => 'templater_factory'
+  );
+  $info['helper']    = array(
+    'class'   => 'HelperBase',
+    'info'    => array(
+      'model' => '%args%Helper',
+      'base'  => 'HelperBase',
+      'args'  => array(
+        'type',
+      )
+    ),
+    'factory' => 'helper_factory'
+  );
+
+  return $info;
+}
