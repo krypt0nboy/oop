@@ -10,33 +10,74 @@
  * Declares a class name and the parameters to instanciante it.
  *
  * @return array
- *   An associative array where the keys are the class name and the values are :
+ *   An associative array where the keys are the class system ID and the values are :
  *    -
  */
 function hook_class_info() {
-  $info                   = array();
-  $info['templater']      = array(
-    'class'   => 'TemplaterBase',
-    'info'    => array(
-      'base' => 'TemplaterBase',
+  $info            = array();
+  $info['builder'] = array(
+    'safe'           => 'BuilderBase',
+    'class_'         => 'BuilderBase',
+    'base'           => 'BuilderBase',
+    'model'          => array(
+      'class' => '%args%Builder',
+      'args'  => array(
+        'builder_sys_id'
+      )
     ),
-    'factory' => 'templater_factory'
-  );
-  $info['builder_helper'] = array(
-    'class'   => 'BuilderHelper',
-    'info'    => array(
-      'base'  => 'BuilderHelper',
-      'model' => '%args%BuilderHelper',
-      'args'  => array()
+    'file'           => array(
+      'name' => '',
+      'path' => '',
+      'file' => '',
     ),
-    'factory' => 'helper_factory'
+    'module'         => 'oop',
+    'dependency dir' => 'builders',
+    'factory'        => 'builder_factory',
   );
 
   return $info;
 }
 
+/**
+ * Declares a factory.
+ *
+ * @return array
+ *   An associative array where the keys are the factory system ID and the values are :
+ *    -
+ */
 function hook_factory_info() {
-  $info = array();
+  $info          = array();
+  $info['model'] = array(
+    'module' => 'oop',
+    'class'  => 'ModelFactory',
+    'file'   => array(
+      'name' => 'ModelFactory',
+      'dir'  => 'models',
+      'path' => '',
+      'file' => '',
+    ),
+  );
+
+  return $info;
+}
+
+/**
+ * Declares a trait.
+ *
+ * @return array
+ *   An associative array where the keys are the trait system ID and the values are :
+ *    -
+ */
+function hook_trait_info() {
+  $info               = array();
+  $info['oop_common'] = array(
+    'module' => 'oop',
+    'file'   => array(
+      'name' => 'OopCommon',
+      'path' => '',
+      'file' => '',
+    ),
+  );
 
   return $info;
 }

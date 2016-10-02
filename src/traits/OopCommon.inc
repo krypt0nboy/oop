@@ -25,6 +25,12 @@ trait OopCommon {
     if (method_exists($this, $method)) {
       return $this->$method();
     }
+    else {
+      $method = 'is' . $cKey;
+      if (method_exists($this, $method)) {
+        return $this->$method();
+      }
+    }
   }
 
   /**
@@ -79,10 +85,12 @@ trait OopCommon {
   }
 
   /**
+   * @param null|string $arg
+   *   The arg to get.
    * @return array
    */
-  public function getConstructArgs() {
-    return $this->constructArgs;
+  public function getConstructArgs($arg = NULL) {
+    return isset($arg) ? $this->constructArgs[$arg] : $this->constructArgs;
   }
 
   /**
@@ -177,6 +185,23 @@ trait OopCommon {
    *   The construct args to check.
    */
   protected function vedConstructArg(array $args = array()) {
+  }
 
+  /**
+   * Extract the object self properties.
+   *
+   * @param array $excludes
+   *   Properties to exclude from the extract.
+   *
+   * @return array
+   */
+  protected function extractSelfProperties(array $excludes = array()) {
+    $vars = get_class_vars(get_class($this));
+    foreach ($excludes as $exclude) {
+      $lExclude = camelcase2lowercase($exclude);
+      unset($vars[$lExclude]);
+    }
+
+    return $vars;
   }
 }

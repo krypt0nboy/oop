@@ -1,82 +1,25 @@
 <?php
 
-require_once OOP_PATH . '/src/traits/OopCommon.inc';
+trait_require_once('oop_common');
+trait_require_once('factory_controls');
+trait_require_once('class_dependent');
+trait_require_once('class_factoring_dependent');
+trait_require_once('module_dependent');
 require_once OOP_PATH . '/src/classes/templaters/TemplaterBase.inc';
+
 
 /**
  * Class FactoryBase
  */
 class FactoryBase {
-  use OopCommon{
+  use OopCommon,
+    ClassDependent,
+    ClassFactoringDependent,
+    ModuleDependent,
+    FactoryControls {
     OopCommon::setUp as oopSetUp;
   }
 
-  /**
-   * @access protected
-   * @var string $name
-   *   The class machine name.
-   */
-  protected $name;
-  /**
-   * @access protected
-   * @var string $class_
-   *   The class to instanciate.
-   */
-  protected $class_;
-  /**
-   * @access protected
-   * @var string $baseClass
-   *   The target object base class.
-   */
-  protected $baseClass;
-  /**
-   * @access protected
-   * @var array $classInfo
-   *   The class info.
-   */
-  protected $classInfo = array();
-  /**
-   * @access protected
-   * @var bool $requiresParsing
-   *   Indicates if the factory needs to parse the model class before instanciating.
-   */
-  protected $requiresParsing;
-  /**
-   * @access protected
-   * @var string $modelClass
-   *   The model to be parsed to obtain the final class.
-   */
-  protected $modelClass;
-  /**
-   * @access protected
-   * @var array $modelClassArgs
-   *   The model args.
-   */
-  protected $modelClassArgs = array();
-  /**
-   * @access protected
-   * @var array $parsingArgs
-   *   The class parsing args.
-   */
-  protected $parsingArgs = array();
-  /**
-   * @access protected
-   * @var string $parsedClass
-   *   The parsed model class.
-   */
-  protected $parsedClass;
-  /**
-   * @access protected
-   * @var string $instanceClass
-   *   The class to use when instanciating.
-   */
-  protected $instanceClass;
-  /**
-   * @access protected
-   * @var array $instanceArgs
-   *   The arguments to pass when instanciating the target object.
-   */
-  protected $instanceArgs = array();
   /**
    * @access protected
    * @var TemplaterBase $templater
@@ -100,180 +43,26 @@ class FactoryBase {
    */
   public function setUp(array $args = array()) {
     $this->oopSetUp($args);
-    $this->classInfo = oop_class_get_info($this->name);
-    $this->class_    = $this->classInfo['class'];
-    $this->baseClass = $this->classInfo['info']['base'];
-    if (!empty($this->classInfo['info']['model'])) {
-      $this->modelClass = $this->classInfo['info']['model'];
+    $this->templater = new TemplaterBase(array('source' => $this));
+    if (isset($this->classSysId)) {
+      // Retrieving class info.
+      $this->classInfo     = oop_class_get_info($this->classSysId);
+      $this->class_        = $this->classInfo['class_'];
+      $this->baseClass     = $this->classInfo['base'];
+      $this->moduleName    = $this->classInfo['module'];
+      $this->safeClass     = empty($this->classInfo['safe']) ? $this->baseClass : $this->classInfo['safe'];
+      $this->dependencyDir = $this->classInfo['dependency dir'];
+      // Retrieving module info.
+      $this->moduleInfo = module_get_info($this->moduleName);
+      $this->modulePath = $this->moduleInfo['path'];
+      if (!empty($this->classInfo['model'])) {
+        $this->modelClass = $this->classInfo['model']['class'];
+        if (!empty($this->classInfo['model']['args'])) {
+          $this->modelArgs = $this->classInfo['model']['args'];
+        }
+      }
+      $this->prepare();
     }
-    $this->requiresParsing = isset($this->modelClass);
-    if ($this->requiresParsing) {
-      $this->templater = new TemplaterBase(array('source' => $this));
-    }
-    $this->prepare();
-  }
-
-  /**
-   * Prepare method.
-   */
-  public function prepare() {
-    if ($this->hasModelClass()) {
-      $this->patchModelClass();
-    }
-  }
-
-  /**
-   * @return string
-   */
-  public function getName() {
-    return $this->name;
-  }
-
-  /**
-   * @param string $name
-   */
-  public function setName($name) {
-    $this->name = $name;
-  }
-
-  /**
-   * @return string
-   */
-  public function getBaseClass() {
-    return $this->baseClass;
-  }
-
-  /**
-   * @param string $baseClass
-   */
-  public function setBaseClass($baseClass) {
-    $this->baseClass = $baseClass;
-  }
-
-  /**
-   * @return array
-   */
-  public function getClassInfo() {
-    return $this->classInfo;
-  }
-
-  /**
-   * @param array $classInfo
-   */
-  public function setClassInfo($classInfo) {
-    $this->classInfo = $classInfo;
-  }
-
-  /**
-   * @return string
-   */
-  public function getModelClass() {
-    return $this->modelClass;
-  }
-
-  /**
-   * @param string $modelClass
-   */
-  public function setModelClass($modelClass) {
-    $this->modelClass = $modelClass;
-  }
-
-  /**
-   * @return string
-   */
-  public function getParsedClass() {
-    return $this->parsedClass;
-  }
-
-  /**
-   * @param string $parsedClass
-   */
-  public function setParsedClass($parsedClass) {
-    $this->parsedClass = $parsedClass;
-  }
-
-  /**
-   * @return array
-   */
-  public function getInstanceArgs() {
-    return $this->instanceArgs;
-  }
-
-  /**
-   * @param array $instanceArgs
-   */
-  public function setInstanceArgs($instanceArgs) {
-    $this->instanceArgs = $instanceArgs;
-  }
-
-  /**
-   * @return boolean
-   */
-  public function getRequiresParsing() {
-    return $this->requiresParsing;
-  }
-
-  /**
-   * @param boolean $requiresParsing
-   */
-  public function setRequiresParsing($requiresParsing) {
-    $this->requiresParsing = $requiresParsing;
-  }
-
-  /**
-   * @return string
-   */
-  public function getInstanceClass() {
-    return $this->instanceClass;
-  }
-
-  /**
-   * @param string $instanceClass
-   */
-  public function setInstanceClass($instanceClass) {
-    $this->instanceClass = $instanceClass;
-  }
-
-  /**
-   * @return string
-   */
-  public function getClass() {
-    return $this->class_;
-  }
-
-  /**
-   * @param string $class_
-   */
-  public function setClass($class_) {
-    $this->class_ = $class_;
-  }
-
-  /**
-   * @return array
-   */
-  public function getModelClassArgs() {
-    return $this->modelClassArgs;
-  }
-
-  /**
-   * @param array $modelClassArgs
-   */
-  public function setModelClassArgs($modelClassArgs) {
-    $this->modelClassArgs = $modelClassArgs;
-  }
-
-  /**
-   * @return array
-   */
-  public function getParsingArgs() {
-    return $this->parsingArgs;
-  }
-
-  /**
-   * @param array $parsingArgs
-   */
-  public function setParsingArgs($parsingArgs) {
-    $this->parsingArgs = $parsingArgs;
   }
 
   /**
@@ -291,12 +80,70 @@ class FactoryBase {
   }
 
   /**
+   * Prepare method.
+   */
+  public function prepare() {
+    $this->patchModelClass();
+  }
+
+  /**
+   * Guesses and auto sets the safe class.
+   */
+  protected function autoSetSafeClass() {
+    $this->safeClass = $this->baseClass;
+  }
+
+  /**
    * Indicates if a model class is set.
    *
    * @return bool
    */
   protected function hasModelClass() {
     return isset($this->modelClass);
+  }
+
+  /**
+   * Indicates if a model class has been patched.
+   *
+   * @return bool
+   */
+  protected function isModelClassPatched() {
+    return isset($this->sourceModelClass);
+  }
+
+  /**
+   * Process the arguments passed when requesting an instance.
+   *
+   * @param array $args
+   *   The args to process.
+   *
+   * @return array
+   */
+  protected function processInstanceRequestArgs(array $args = array()) {
+    if (!empty($args['parsing_args'])) {
+      $this->setParsingArgs($args['parsing_args']);
+    }
+    if (!empty($args['instance_args'])) {
+      $this->setInstanceArgs($args['instance_args']);
+    }
+  }
+
+  /**
+   * Retrieves the models real args and returns a useable model class.
+   */
+  protected function patchModelClass() {
+    if ($this->hasModelClass()) {
+      if (preg_match('/%args%/', $this->modelClass)) {
+        $strArgs = array();
+        foreach ($this->modelArgs as $strArg) {
+          $strArgs[] = "%$strArg%";
+        }
+        $patch                  = concat('', $strArgs, '');
+        $patched                = preg_replace('/%args%/', $patch, $this->modelClass);
+        $this->sourceModelClass = $this->modelClass;
+        $this->modelClass       = $patched;
+      }
+    }
   }
 
   /**
@@ -310,27 +157,12 @@ class FactoryBase {
   protected function parseModelClass($autoSet = TRUE) {
     $parsed = $this->getTemplater()
                    ->process($this->modelClass, $this->parsingArgs, TRUE);
-    $ved    = $this->validateParsedClass($parsed);
-    if ($autoSet && $ved) {
+    $ved    = $this->validateClass($parsed);
+    if ($ved) {
       $this->parsedClass = $parsed;
     }
 
-    return $parsed;
-  }
-
-  /**
-   * Retrieves the models real args and returns a useable model class.
-   */
-  protected function patchModelClass() {
-    if (preg_match('/%args%/', $this->modelClass)) {
-      $strArgs = array();
-      foreach ($this->classInfo['info']['args'] as $strArg) {
-        $strArgs[] = "%$strArg%";
-      }
-      $patch            = concat('', $strArgs, '');
-      $patched          = preg_replace('/%args%/', $patch, $this->modelClass);
-      $this->modelClass = $patched;
-    }
+    return $ved ? $parsed : NULL;
   }
 
   /**
@@ -341,10 +173,47 @@ class FactoryBase {
    *
    * @return bool
    */
-  protected function validateParsedClass($parsed) {
+  protected function validateClass($parsed) {
     $exists = class_exists($parsed);
+    if (!$exists) {
+      $tryClassFile = $this->buildClassFile($parsed);
+      if (file_exists($tryClassFile)) {
+        require_once $tryClassFile;
+        if (class_exists($parsed)) {
+          $exists = TRUE;
+          $this->setIncludeRequired(TRUE);
+        }
+        else {
+          $this->instanceClass = $this->safeClass;
+        }
+      }
+    }
+    else {
+      $this->instanceClass = $this->safeClass;
+    }
 
     return $exists;
+  }
+
+  /**
+   * Builds the class file.
+   *
+   * @return string
+   */
+  protected function buildClassFile($class) {
+    $tails = array('src', 'classes', $this->dependencyDir);
+
+    return file_path($class, $this->modulePath, $tails, 'inc');
+  }
+
+  /**
+   * Requires once a class file.
+   */
+  protected function requireOnceClassFile() {
+    $file = $this->buildClassFile($this->instanceClass);
+    $this->setClassFile($file);
+
+    require_once $this->classFile;
   }
 
   /**
@@ -355,17 +224,44 @@ class FactoryBase {
   protected function ensureClass() {
     if (!isset($this->instanceClass)) {
       if ($this->hasModelClass()) {
-        $this->parseModelClass();
-        $class = $this->getParsedClass();
-        $this->setInstanceClass($class);
+        $class = $this->parseModelClass();
+        if (isset($class)) {
+          $this->setInstanceClass($class);
+        }
+        else {
+          $ved = $this->validateClass($this->class_);
+          if ($ved) {
+            $this->setInstanceClass($this->class_);
+          }
+        }
       }
       else {
-        $class = class_exists($this->class_) ? $this->class_ : $this->baseClass;
-        $this->setInstanceClass($class);
+        $ved = $this->validateClass($this->class_);
+        if ($ved) {
+          $this->setInstanceClass($this->class_);
+        }
       }
     }
 
     return TRUE;
+  }
+
+  /**
+   * Flushes the given parameters.
+   */
+  protected function flush($flush = TRUE) {
+    if ($flush) {
+      $this->flushExec();
+      $this->setFlushed(TRUE);
+    }
+  }
+
+  /**
+   * Flushed the given parameters.
+   */
+  protected function flushExec() {
+    $this->parsingArgs  = array();
+    $this->instanceArgs = array();
   }
 
   /**
@@ -376,10 +272,15 @@ class FactoryBase {
    *
    * @return object
    */
-  public function getInstance($args = array(), $flush = FALSE) {
-    $this->bulkSet($args);
+  public function getInstance($args = array(), $flush = TRUE) {
+    $this->flush($flush);
+    $this->processInstanceRequestArgs($args);
+    $this->setFlushed(FALSE);
     $this->ensureClass();
     $class = $this->getInstanceClass();
+    if ($this->isIncludeRequired()) {
+      $this->requireOnceClassFile();
+    }
 
     return new $class($this->instanceArgs);
   }

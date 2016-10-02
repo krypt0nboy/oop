@@ -1,9 +1,13 @@
 <?php
 
+trait_require_once('oop_common');
+trait_require_once('templating');
+
 /**
  * Class HelperBase
  */
 class HelperBase {
+
   use OopCommon,
     Templating {
     OopCommon::setUp as oopSetUp;

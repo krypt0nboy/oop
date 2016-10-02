@@ -1,7 +1,7 @@
 <?php
 
-require_once OOP_PATH . '/src/traits/OopCommon.inc';
-require_once OOP_PATH . '/src/traits/Templating.inc';
+trait_require_once('oop_common');
+trait_require_once('templating');
 
 /**
  * Class TemplaterBase

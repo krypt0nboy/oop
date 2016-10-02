@@ -38,16 +38,9 @@ trait HelperDependent {
    * @return HelperBase
    */
   protected function helperGetInstance($type, array $args = array()) {
-    $factory = new HelperFactory();
-    $args += array(
-      'parsing_args'  => array(
-        'type' => $type
-      ),
-      'instance_args' => array(
-        'data_holder' => $this
-      )
-    );
-
-    return $factory->getInstance($args);
+    return factory('helper')
+      ->parsing_arg('type', $type)
+      ->instance_arg('data_holder', $this)
+      ->getInstance($args);
   }
 }

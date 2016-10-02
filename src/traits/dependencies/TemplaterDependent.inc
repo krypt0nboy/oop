@@ -1,6 +1,7 @@
 <?php
 
 require_once OOP_PATH . '/src/classes/templaters/TemplaterBase.inc';
+require_once OOP_PATH . '/src/classes/factories/templaters/TemplaterFactory.inc';
 
 /**
  * Class TemplaterDependent
@@ -33,7 +34,7 @@ trait TemplaterDependent {
    * @param array $vars
    *   The vars to init.
    */
-  public function initTplVars(array $vars = array()) {
+  protected function initTplVars(array $vars = array()) {
     $this->templater->setTplVars($vars);
   }
 
@@ -46,11 +47,8 @@ trait TemplaterDependent {
    * @return TemplaterBase
    */
   public function templaterGetInstance(array $args = array()) {
-    $factory = new TemplaterFactory();
-    $args += array(
-      'source' => $this
-    );
-
-    return $factory->getInstance($args);
+    return factory('templater')
+      ->instance_arg('source', $this)
+      ->getInstance($args, FALSE);
   }
 }

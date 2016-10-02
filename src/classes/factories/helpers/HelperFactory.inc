@@ -10,7 +10,7 @@ class HelperFactory extends FactoryBase {
    */
   public function __construct(array $args = array()) {
     $args = $this->mergeArgs(array(
-      'name' => 'helper'
+      'class_sys_id' => 'helper'
     ), $args);
     parent::__construct($args);
   }

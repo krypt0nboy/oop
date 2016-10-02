@@ -1,7 +1,6 @@
 <?php
 
 require_once OOP_PATH . '/src/classes/factories/FactoryBase.inc';
-require_once OOP_PATH . '/src/classes/templaters/TemplaterBase.inc';
 
 /**
  * Class TemplaterFactory
@@ -13,7 +12,7 @@ class TemplaterFactory extends FactoryBase {
    */
   public function __construct(array $args = array()) {
     $args = $this->mergeArgs(array(
-      'name' => 'templater'
+      'class_sys_id' => 'templater'
     ), $args);
     parent::__construct($args);
   }

@@ -40,12 +40,36 @@ function oop_menu() {
 }
 
 /**
+ * Implements hook_admin_menu_cache_info().
+ */
+function oop_admin_menu_cache_info() {
+  $caches[OOP] = array(
+    'title'    => t('OOP'),
+    'callback' => 'oop_cc_all',
+  );
+
+  return $caches;
+}
+
+/**
+ * Cc all function.
+ */
+function oop_cc_all() {
+  cache_clear_all('*', OOP_DB__CACHE, TRUE);
+}
+
+/**
+ * Implements hook_flush_caches().
+ */
+function oop_flush_caches() {
+  return array(OOP_DB__CACHE);
+}
+
+/**
  * Test function.
  */
 function oop_test() {
-  require_once GENERATOR_PATH . '/src/classes/factories/generators/GeneratorFactory.inc';
-  $factory  = new GeneratorFactory();
-  $instance = $factory->getInstance();
+  $generator = generator('entity_toolbox_info');
 }
 
 /**
@@ -54,22 +78,96 @@ function oop_test() {
 function oop_class_info() {
   $info              = array();
   $info['templater'] = array(
-    'class'   => 'TemplaterBase',
-    'info'    => array(
-      'base' => 'TemplaterBase',
-    ),
-    'factory' => 'templater_factory'
-  );
-  $info['helper']    = array(
-    'class'   => 'HelperBase',
-    'info'    => array(
-      'model' => '%args%Helper',
-      'base'  => 'HelperBase',
+    'safe'           => 'TemplaterBase',
+    'class_'         => 'TemplaterBase',
+    'base'           => 'TemplaterBase',
+    'model'          => array(
+      'class' => '%args%Templater',
       'args'  => array(
-        'type',
+        'templater_sys_id'
       )
     ),
-    'factory' => 'helper_factory'
+    'module'         => 'oop',
+    'dependency dir' => 'templaters',
+    'factory'        => 'templater',
+  );
+  $info['helper']    = array(
+    'safe'           => 'HelperBase',
+    'class_'         => 'HelperBase',
+    'base'           => 'HelperBase',
+    'model'          => array(
+      'class' => '%args%Helper',
+      'args'  => array(
+        'type'
+      )
+    ),
+    'module'         => 'oop',
+    'dependency dir' => 'helpers',
+    'factory'        => 'helper',
+  );
+
+  return $info;
+}
+
+/**
+ * Implements hook_factory_info().
+ */
+function oop_factory_info() {
+  $info              = array();
+  $info['helper']    = array(
+    'class' => 'HelperFactory',
+    'file'  => array(
+      'name' => 'HelperFactory',
+      'dir'  => 'helpers',
+    ),
+  );
+  $info['templater'] = array(
+    'class' => 'TemplaterFactory',
+    'file'  => array(
+      'name' => 'TemplaterFactory',
+      'dir'  => 'templaters',
+    ),
+  );
+
+  return $info;
+}
+
+/**
+ * Implements hook_trait_info().
+ */
+function oop_trait_info() {
+  $info                              = array();
+  $info['oop_common']                = array();
+  $info['templating']                = array();
+  $info['factory_controls']          = array();
+  $info['class_dependent']           = array(
+    'file' => array(
+      'path' => paths_join(OOP_PATH, array('src', 'traits', 'dependencies'))
+    )
+  );
+  $info['class_factoring_dependent'] = array(
+    'file' => array(
+      'path' => paths_join(OOP_PATH, array('src', 'traits', 'dependencies'))
+    )
+  );
+  $info['templater_dependent']       = array(
+    'file' => array(
+      'path' => paths_join(OOP_PATH, array('src', 'traits', 'dependencies'))
+    )
+  );
+  $info['module_dependent']          = array(
+    'file' => array(
+      'path' => paths_join(OOP_PATH, array('src', 'traits', 'dependencies'))
+    )
+  );
+  $info['helper_dependent']          = array(
+    'file' => array(
+      'path' => paths_join(OOP_PATH, array(
+        'src',
+        'traits',
+        'dependencies',
+      ))
+    )
   );
 
   return $info;

@@ -57,6 +57,9 @@ function oop_cache_info() {
   $info                                  = array();
   $info[OOP_DB__CACHE]['class_info']     = array();
   $info[OOP_DB__CACHE]['class_registry'] = array();
+  $info[OOP_DB__CACHE]['trait_info']     = array();
+  $info[OOP_DB__CACHE]['interface_info'] = array();
+  $info[OOP_DB__CACHE]['factory_info']   = array();
 
   return $info;
 }
